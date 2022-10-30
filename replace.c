@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 //my header files
 #include "report.h"
@@ -8,16 +9,27 @@
 //global variables for target string (cmd line arg) and info on files changed, so other files can access it
 char *targetString;
 char *filesChanged;
+int sizeOfFiles;
+int numOfFilesChanged;
 
 
 int main(int argc, char *argv[]) {
     
     //make sure that there is a target string in command line argument
     if (argc == 2) {
+        // char *target = argv[1];
         targetString = argv[1];
+
+    // //search is case insentitive so converting target string to all lower case
+    //     for (int i = 0; target[i] != '\0'; i++) {
+    //         targetString[i] = tolower(target[i]);
+    //     }
 
         //filesChanged is empty right now, reallocation happens in a loop so have to malloc here
         filesChanged = (char*) malloc(0);
+        //keep track of size of the filesChanged string
+        sizeOfFiles = 0;
+        numOfFilesChanged = 0;
 
         //begin search for text files in current directory, function in traversal.c
         searchDirectory(".");

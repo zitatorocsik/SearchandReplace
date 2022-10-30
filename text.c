@@ -6,6 +6,8 @@
 //variables defined outside scope of this file
 extern char *targetString;
 extern char *filesChanged;
+extern int sizeOfFiles;
+extern int numOfFilesChanged;
 
 void readAndReplace(char* filename) {
 
@@ -39,6 +41,13 @@ void readAndReplace(char* filename) {
     while (fgets(fileLine, 255, fpointer) != NULL) {
         strcat(fileContents, fileLine);
     }
+    //convert file contents to lower case(for case insentive target word search)
+    char *lowerFileContents;
+    lowerFileContents = (char*) malloc((sizeof(char)*strlen(fileContents))+1);
+
+    for (int i = 0; fileContents[i] != '\0'; i++) {
+        lowerFileContents[i] = tolower(fileContents[i]);
+    }
 
     //pointer to first character of target string occurence in fileCOntents
     char *foundptr;
@@ -46,7 +55,7 @@ void readAndReplace(char* filename) {
 
     do {
         //find first occurence of targetString
-        foundptr = strstr(fileContents, targetString);
+        foundptr = strstr(lowerFileContents, targetString);
 
         //if there is an occurence, increment timeChanged and change the targetString in fileContents to uppercase
         if (foundptr != NULL) {
@@ -62,13 +71,18 @@ void readAndReplace(char* filename) {
     //convert timesChanged to character
     char buffer[sizeof(timesChanged)];
     sprintf(buffer, "%d", timesChanged);
-    char number[sizeof(char)*2];
+    char number[sizeof(buffer)];
     strcpy(number, buffer);
+    int filenameLength = strlen(filename);
 
     //if we did change the fileContents
     if (timesChanged != 0) {
+        //increment files change counter
+        numOfFilesChanged++;
         //reallocating size of filesChanges string so I can add the changed file
-        int size = sizeof(filename) + sizeof(number) + (sizeof("\t")*4) + 100;
+        //add size onto sizeOfFiles int, so I can realloc on top of the existing size
+        sizeOfFiles += sizeof(char)*filenameLength + sizeof(number) + (sizeof("\t")*4);
+        int size = sizeof(char)*filenameLength + sizeof(number) + (sizeof("\t")*4) + sizeOfFiles;
         filesChanged = (char *) realloc(filesChanged, size);
 
         //add number of updates to file
@@ -83,7 +97,9 @@ void readAndReplace(char* filename) {
     //set file pointer to beginning of file so I can overwrite contents
     fseek(fpointer, 0L, SEEK_SET);
     //print changed contents onto file
-    fprintf(fpointer, fileContents);
+    fprintf(fpointer, lowerFileContents);
+
+    free(lowerFileContents);
 
     //close file pointer
     fclose(fpointer);
